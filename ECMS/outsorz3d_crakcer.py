@@ -105,9 +105,7 @@ def exec_sub(operand, compared_value):
 	return (compared_value + operand)&0xff
 
 def exec_xor(operand, compared_value):
-	for i in range(33, 127):
-		if i ^ operand == compared_value:
-			return i & 0xff
+	return (compared_value ^ operand)&0xff
 
 def exec_ror(operand, compared_value):
 	ror = lambda val, r_bits, max_bits: \
@@ -157,20 +155,9 @@ def cracker(const_code, jmp_list, compared_values, c_idxs, flag):
 		i = 0
 		c_idx_counter += 1
 
-def download_binary():
-	r = requests.get('http://outsourz3d.ecsm2018.hack.cert.pl/binary', stream=True)
-	with open('binary', 'wb') as f:
-		f.write(r.content)
-		return r.cookies['session']
-	del r
-
-def send_the_flag(session_id, flag):
-	r = requests.post('http://outsourz3d.ecsm2018.hack.cert.pl/validate', cookies={'session': session_id}, data={'answer': flag})
-	if r.status_code == 200:
-		print('SESSION_ID: ', r.cookies['session'])
-		print(r.text)
-
 def main():
+	session_id_counter = 0
+
 	for k in range(20):
 		compared_values = []
 		char_indexes = []
@@ -178,8 +165,16 @@ def main():
 		jmp_list = []
 		const_code = []
 
-		session_id = download_binary()
-		print('download SESSION_ID:', session_id)
+		if session_id_counter < 1:
+			r = requests.get('http://outsourz3d.ecsm2018.hack.cert.pl/binary')
+			session_id = r.cookies['session']
+			session_id_counter += 1
+		else:
+			r = requests.get('http://outsourz3d.ecsm2018.hack.cert.pl/binary', cookies={'session': session_id})
+
+		with open('binary', 'wb') as f:
+			f.write(r.content)
+
 
 		for i in range(33):
 			flag.append('X')
@@ -204,7 +199,10 @@ def main():
 
 		flag = ''.join(flag)[:-1]
 		code.close()
-		send_the_flag(session_id, flag)
+
+		r = requests.post('http://outsourz3d.ecsm2018.hack.cert.pl/validate', cookies={'session':session_id}, data={'answer': flag})
+		print(r.text)
+		session_id = r.cookies['session']
 
 if __name__ == '__main__':
 	main()
