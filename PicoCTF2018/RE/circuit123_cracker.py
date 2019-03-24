@@ -44,4 +44,4 @@ if __name__ == '__main__':
     if verify(key, chalbox):
         print 'Congrats the flag for ' + sys.argv[2] + ' is:', dec(key, cipher)
     else:
-print 'Wrong key for ' + sys.argv[2] + '.'
+        print 'Wrong key for ' + sys.argv[2] + '.'
